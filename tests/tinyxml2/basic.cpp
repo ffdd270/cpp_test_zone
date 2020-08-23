@@ -28,9 +28,15 @@ tinyxml2::XMLElement * add_element( tinyxml2::XMLDocument * p_doc )
 	return p_root_element;
 }
 
+void add_element_property( tinyxml2::XMLElement * p_parent_element )
+{
+	p_parent_element->SetAttribute("name", "hg");
+	p_parent_element->SetAttribute( "is_open", false );
+}
+
 SCENARIO("what is xml?", "[tinyxml]")
 {
-	GIVEN("a single xml document")
+	GIVEN("a single xml empty document")
 	{
 		auto * p_doc = new tinyxml2::XMLDocument();
 
@@ -65,7 +71,30 @@ SCENARIO("what is xml?", "[tinyxml]")
 				REQUIRE( strcmp( p_doc->LastChild()->Value(), "test_root_node" ) == 0 );
 			}
 		}
-
 		delete p_doc;
+	}
+
+
+	GIVEN("a single xml document")
+	{
+		auto * p_doc = new tinyxml2::XMLDocument();
+
+		add_declaration( p_doc );
+		add_element( p_doc );
+
+		tinyxml2::XMLElement * p_root_element = p_doc->RootElement();
+		REQUIRE( p_root_element != nullptr );
+
+		tinyxml2::XMLElement * p_child_element = p_doc->NewElement("child1");
+
+		add_element_property( p_child_element );
+		p_root_element->LinkEndChild( p_child_element );
+
+
+		WHEN("find a child")
+		{
+
+
+		}
 	}
 }
