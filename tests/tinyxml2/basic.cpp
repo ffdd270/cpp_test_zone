@@ -6,6 +6,7 @@
 #include <tinyxml2.h>
 #include <iostream>
 #include <memory>
+#include <cstring>
 
 tinyxml2::XMLDeclaration * add_declaration( tinyxml2::XMLDocument * p_doc )
 {
@@ -28,10 +29,10 @@ tinyxml2::XMLElement * add_element( tinyxml2::XMLDocument * p_doc )
 	return p_root_element;
 }
 
-void add_element_property( tinyxml2::XMLElement * p_parent_element )
+void add_element_property( tinyxml2::XMLElement * p_parent_element, const char * name_attr, bool open_attr )
 {
-	p_parent_element->SetAttribute("name", "hg");
-	p_parent_element->SetAttribute( "is_open", false );
+	p_parent_element->SetAttribute("name", name_attr);
+	p_parent_element->SetAttribute( "is_open", open_attr );
 }
 
 SCENARIO("what is xml?", "[tinyxml]")
@@ -75,6 +76,23 @@ SCENARIO("what is xml?", "[tinyxml]")
 	}
 
 
+	GIVEN("a single string")
+	{
+		std::string name = "Window_Test";
+
+		WHEN("replace _ to space")
+		{
+			std::replace( name.begin(), name.end(), '_', ' ' );
+
+			THEN(" no _. only space. ")
+			{
+				REQUIRE( name == "Window Test");
+			}
+		}
+
+
+	}
+
 	GIVEN("a single xml document")
 	{
 		auto * p_doc = new tinyxml2::XMLDocument();
@@ -82,19 +100,53 @@ SCENARIO("what is xml?", "[tinyxml]")
 		add_declaration( p_doc );
 		add_element( p_doc );
 
+
 		tinyxml2::XMLElement * p_root_element = p_doc->RootElement();
 		REQUIRE( p_root_element != nullptr );
 
-		tinyxml2::XMLElement * p_child_element = p_doc->NewElement("child1");
+		tinyxml2::XMLElement * p_windows = p_doc->NewElement("Windows");
 
-		add_element_property( p_child_element );
-		p_root_element->LinkEndChild( p_child_element );
+		tinyxml2::XMLElement * p_child_element = p_doc->NewElement("Node_Viewer");
+		add_element_property( p_child_element, "Node Viewer", false );
 
+		tinyxml2::XMLElement * p_child2_element = p_doc->NewElement("World_Wonder");
+		add_element_property( p_child2_element, "World Wonder", true );
+
+		p_windows->LinkEndChild( p_child_element );
+		p_windows->LinkEndChild( p_child2_element );
+
+		p_root_element->LinkEndChild( p_windows );
 
 		WHEN("find a child")
 		{
+			std::string name = "World_Wonder";
+			tinyxml2::XMLElement * p_windows_element = p_root_element->FirstChildElement();
+			REQUIRE( strcmp( p_windows_element->Name(), "Windows" ) == 0 );
 
+			tinyxml2::XMLElement * p_cur_node = p_windows_element->FirstChildElement();
 
+			while( nullptr != p_cur_node )
+			{
+ 				if ( strcmp( p_cur_node->Value(), name.c_str() ) == 0 )
+				{
+ 					break;
+				}
+
+ 				p_cur_node = p_cur_node->NextSiblingElement();
+			}
+
+			THEN( "World Wonder?" )
+			{
+				REQUIRE( p_cur_node != nullptr );
+				REQUIRE( strcmp( p_cur_node->Value(), name.c_str() ) == 0 );
+			}
 		}
+
+		WHEN("add a child")
+		{
+			tinyxml2::XMLElement * p_another_child = p_doc->NewElement("");
+		}
+
+		delete p_doc;
 	}
 }
