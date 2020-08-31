@@ -5,7 +5,6 @@
 #include <catch.hpp>
 #include <tinyxml2.h>
 #include <iostream>
-#include <memory>
 #include <cstring>
 
 tinyxml2::XMLDeclaration * add_declaration( tinyxml2::XMLDocument * p_doc )
